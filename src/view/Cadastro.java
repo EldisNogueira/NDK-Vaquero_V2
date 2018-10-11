@@ -8,12 +8,18 @@ package view;
 import Connection.ConnectionFactory;
 import fachada.Fachada;
 import java.awt.Color;
+import java.io.File;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.border.LineBorder;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.view.JasperViewer;
 import model.Caixa;
 import model.Vaqueiros;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 //import net.sf.jasperreports.engine.*;
 /**
  *
@@ -28,7 +34,7 @@ public class Cadastro extends javax.swing.JFrame {
         initComponents();
         vaqueiro = new Vaqueiros();
     }
-
+     private List<Vaqueiros> lista = new ArrayList<Vaqueiros>();
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -264,10 +270,31 @@ public class Cadastro extends javax.swing.JFrame {
 //                        setVaqueiros(vaqueiro);
                         if(jtfNome.getText().equals("")){
                             Mensagem.exibirMensagem("Nome incorreto!");
-                        }else{
+                        }else
+                            if(jtfEsteira.getText().equals("")){
+                                Mensagem.exibirMensagem("Esteira incorreta!");
+                            }else
+                                if(jtfRepres.getText().equals("")){
+                                Mensagem.exibirMensagem("Representação incorreta!");
+                            }else{
                             Fachada.getInstance().cadastrarVaqueiros(getVaqueiro());
                             Mensagem.exibirMensagem("Vaqueiro cadastrado com sucesso!");
-//                        preencherTabela(Fachada.getInstance().getAllByIdParcelas(vaqueiro.getId()));
+                            
+                            //Imprimir
+                            
+                            String caminho = new File("./relatorio/report.jrxml").getAbsolutePath();
+                            try {
+                                JasperReport relatorio = JasperCompileManager.compileReport(caminho); //Compila relatorio
+                                
+                                JRBeanCollectionDataSource dados =new JRBeanCollectionDataSource(lista, false);
+                                JasperPrint print = JasperFillManager.fillReport(relatorio, null, dados);
+                                setVisible(true);
+                                
+                                JasperViewer.viewReport(print, false);
+                            } catch (JRException ex) {
+                                Logger.getLogger(Cadastro.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            
                         }
                     } catch (NullPointerException e) {
                         Mensagem.exibirMensagem("Preencha todos os campos por favor!");
